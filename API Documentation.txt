@@ -1,0 +1,776 @@
+# Smart Replenishment Module - API Documentation
+
+## Authentication
+
+All endpoints require API key-based authentication.
+
+**Header Example:**
+
+```
+Authorization: token {{api_token}}:{{api_secret}}
+```
+
+## Base URL
+
+```
+{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api
+```
+
+**Example:**
+```
+https://yoursite.erpnext.com/api/method/smart_replenishment_module.api.recommendation_api
+```
+
+---
+
+## 1. Get Recommendations
+
+**Description:** Retrieve replenishment recommendations with filtering and pagination.
+
+**Method:** GET
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.get_recommendations`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Query Parameters (optional):**
+
+    Content-Type: application/json
+    
+    {
+        "filters": {
+            "status": "Pending|Approved|Ordered|Rejected",
+            "priority": "High|Medium|Low",
+            "warehouse": "Warehouse Name",
+            "item_code": "Item Code",
+            "item_group": "Item Group Name"
+        },
+        "page": 1,
+        "page_size": 20,
+        "sort_by": "priority"
+    }
+
+**Parameters Description:**
+
+- **filters** (JSON object, optional): Filter criteria
+  - status: Workflow state (Pending, Approved, Ordered, Rejected)
+  - priority: Priority level (High, Medium, Low)
+  - warehouse: Warehouse name
+  - item_code: Item code
+  - item_group: Item group name
+- **page** (Integer, optional): Page number (1-based, default: 1)
+- **page_size** (Integer, optional): Records per page (default: 20)
+- **sort_by** (String, optional): Sort field options: "priority", "created", "current_stock_qty" (default: "priority")
+
+**Note:** Status values represent workflow states: Pending (draft), Approved/Rejected/Ordered (submitted).
+
+**Example Request:**
+
+```bash
+curl -X GET \
+  '{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.get_recommendations?filters={"status":"Pending","priority":"High"}&page=1&page_size=20' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "data": [
+      {
+        "name": "REP-REC-2025-00001",
+        "item_code": "ITEM-001",
+        "item_name": "Paracetamol 500mg",
+        "warehouse": "Main Warehouse - Company",
+        "status": "Pending",
+        "priority": "High",
+        "current_stock_qty": 200.0,
+        "reorder_point": 450.0,
+        "recommended_order_qty": 500.0,
+        "average_daily_consumption": 50.0,
+        "lead_time_days": 7,
+        "safety_stock_days": 2,
+        "preferred_supplier": "Supplier-001",
+        "estimated_cost": 2500.0,
+        "purchase_order": null,
+        "creation": "2025-01-15 10:30:00",
+        "modified": "2025-01-15 10:30:00"
+      }
+    ],
+    "total_count": 1,
+    "page": 1,
+    "page_size": 20,
+    "total_pages": 1
+  }
+}
+```
+
+**Error Responses:**
+
+- **Status:** 400 Bad Request - Invalid parameters
+- **Status:** 401 Unauthorized - Invalid or missing authentication
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 2. Trigger Recommendation Generation
+
+**Description:** Manually trigger recommendation generation. This endpoint scans inventory and creates recommendations for items below reorder points.
+
+**Method:** GET
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.trigger_recommendation_generation`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Query Parameters (optional):**
+
+    Content-Type: application/json
+    
+    {
+        "warehouse": "Main Warehouse - Company"
+    }
+
+**Parameters Description:**
+
+- **warehouse** (String, optional): Filter by specific warehouse. If not provided, scans all warehouses.
+
+**Example Request:**
+
+```bash
+curl -X GET \
+  '{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.trigger_recommendation_generation?warehouse=Main Warehouse - Company' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "status": "success",
+    "created_count": 5,
+    "skipped_count": 10,
+    "total_processed": 15,
+    "errors": []
+  }
+}
+```
+
+**Note:** The system automatically prevents duplicate recommendations. If a pending or approved recommendation already exists for an item-warehouse combination, it will be skipped.
+
+**Error Responses:**
+
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 3. Approve Recommendation
+
+**Description:** Approve a pending replenishment recommendation. Only recommendations with status "Pending" can be approved.
+
+**Note:** Status changes are managed by the workflow system. In the UI, use workflow actions (Approve/Reject buttons) instead of manually changing the status field. This API endpoint is available for external integrations that need to programmatically approve recommendations.
+
+**Method:** POST
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.approve_recommendation`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Request Body:**
+
+    Content-Type: application/json
+
+    {
+        "recommendation_name": "REP-REC-2025-00001"
+    }
+
+**Parameters Description:**
+
+- **recommendation_name** (String, required): Name of the recommendation document to approve
+
+**Example Request:**
+
+```bash
+curl -X POST \
+  '{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.approve_recommendation' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}' \
+  -d '{
+    "recommendation_name": "REP-REC-2025-00001"
+  }'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "status": "success",
+    "recommendation": "REP-REC-2025-00001",
+    "new_status": "Approved"
+  }
+}
+```
+
+**Error Responses:**
+
+- **Status:** 400 Bad Request - Recommendation not in Pending status
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 4. Create Purchase Order
+
+**Description:** Create a Purchase Order from an approved replenishment recommendation. The recommendation must be in "Approved" status.
+
+**Method:** POST
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.create_purchase_order`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Request Body:**
+
+    Content-Type: application/json
+
+    {
+        "recommendation_name": "REP-REC-2025-00001"
+    }
+
+**Parameters Description:**
+
+- **recommendation_name** (String, required): Name of the approved recommendation document
+
+**Example Request:**
+
+```bash
+curl -X POST \
+  '{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.create_purchase_order' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}' \
+  -d '{
+    "recommendation_name": "REP-REC-2025-00001"
+  }'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "status": "success",
+    "purchase_order": "PUR-ORD-2025-00001",
+    "supplier": "Supplier-001",
+    "company": "Company",
+    "total_amount": 2500.0
+  }
+}
+```
+
+**Note:**
+
+- The system automatically determines the supplier using this priority:
+  1. Preferred supplier from recommendation
+  2. Preferred supplier from Item Reorder settings
+  3. Default supplier from Item Supplier table
+- The recommendation status is automatically updated to "Ordered" and linked to the created Purchase Order.
+- Purchase Order items include `last_purchase_rate` for tracking.
+- If supplier is not found, the request will fail with a 400 error.
+
+**Error Responses:**
+
+- **Status:** 400 Bad Request - Recommendation not approved, supplier not found, company not found, etc.
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 5. Generate Recommendations (Direct)
+
+**Description:** Directly generate replenishment recommendations for items below reorder points. This is the core function that scans inventory and creates recommendations. Can be called directly or through the trigger endpoint.
+
+**Method:** GET
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.recommendation_generator.generate_recommendations`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Query Parameters (optional):**
+
+    Content-Type: application/json
+    
+    {
+        "warehouse": "Main Warehouse - Company",
+        "item_group": "Pharmaceuticals"
+    }
+
+**Parameters Description:**
+
+- **warehouse** (String, optional): Filter by specific warehouse. If not provided, scans all warehouses.
+- **item_group** (String, optional): Filter by specific item group. If not provided, scans all item groups.
+
+**Example Request:**
+
+```bash
+curl -X GET \
+  '{{base_url}}/api/method/smart_replenishment_module.api.recommendation_generator.generate_recommendations?warehouse=Main Warehouse - Company' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "created_count": 5,
+    "skipped_count": 10,
+    "total_processed": 15,
+    "errors": []
+  }
+}
+```
+
+**Note:** The system automatically prevents duplicate recommendations. If a pending or approved recommendation already exists for an item-warehouse combination, it will be skipped.
+
+**Error Responses:**
+
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 6. Regenerate Recommendations for Item
+
+**Description:** Regenerate recommendations for a specific item-warehouse combination when reorder level changes. This endpoint is useful when reorder points are updated and you need to refresh recommendations.
+
+**Method:** GET
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.recommendation_generator.regenerate_recommendations_for_item`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Query Parameters (required):**
+
+    Content-Type: application/json
+    
+    {
+        "item_code": "ITEM-001",
+        "warehouse": "Main Warehouse - Company"
+    }
+
+**Parameters Description:**
+
+- **item_code** (String, required): Item code to regenerate recommendations for
+- **warehouse** (String, required): Warehouse to regenerate recommendations for
+
+**Example Request:**
+
+```bash
+curl -X GET \
+  '{{base_url}}/api/method/smart_replenishment_module.api.recommendation_generator.regenerate_recommendations_for_item?item_code=ITEM-001&warehouse=Main Warehouse - Company' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "created_count": 1,
+    "skipped_count": 0,
+    "total_processed": 1
+  }
+}
+```
+
+**Note:** If stock is above reorder level, any existing pending recommendations will be deleted.
+
+**Error Responses:**
+
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 7. Get Item Last Purchase Rate
+
+**Description:** Get the last purchase rate for an item from Purchase Order Item history. This is useful for calculating estimated costs in client-side applications.
+
+**Method:** GET
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.recommendation_generator.get_item_last_purchase_rate_api`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Query Parameters (required):**
+
+    Content-Type: application/json
+    
+    {
+        "item_code": "ITEM-001"
+    }
+
+**Parameters Description:**
+
+- **item_code** (String, required): Item code to get purchase rate for
+
+**Example Request:**
+
+```bash
+curl -X GET \
+  '{{base_url}}/api/method/smart_replenishment_module.api.recommendation_generator.get_item_last_purchase_rate_api?item_code=ITEM-001' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "rate": 5.50
+  }
+}
+```
+
+**Note:** The rate is retrieved from Purchase Order Item history. If no purchase history exists, it falls back to valuation rate or standard rate from the Item master.
+
+**Error Responses:**
+
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 8. Calculate Consumption Metrics
+
+**Description:** Calculate average daily consumption and consumption metrics for an item in a specific warehouse based on stock ledger entries.
+
+**Method:** GET
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.stock_analyzer.calculate_consumption_metrics`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Query Parameters (optional):**
+
+    Content-Type: application/json
+    
+    {
+        "item_code": "ITEM-001",
+        "warehouse": "Main Warehouse - Company",
+        "consumption_period_days": 90
+    }
+
+**Parameters Description:**
+
+- **item_code** (String, required): Item code to calculate metrics for
+- **warehouse** (String, required): Warehouse to calculate metrics for
+- **consumption_period_days** (Integer, optional): Number of days to look back for consumption analysis (default: 90)
+
+**Example Request:**
+
+```bash
+curl -X GET \
+  '{{base_url}}/api/method/smart_replenishment_module.api.stock_analyzer.calculate_consumption_metrics?item_code=ITEM-001&warehouse=Main Warehouse - Company&consumption_period_days=90' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "average_daily_consumption": 50.0,
+    "total_consumption": 4500.0,
+    "analysis_from_date": "2024-10-15",
+    "analysis_to_date": "2025-01-15",
+    "consumption_period_days": 90,
+    "days_with_transactions": 75
+  }
+}
+```
+
+**Error Responses:**
+
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 9. Update Reorder Points
+
+**Description:** Update reorder points for items based on consumption analysis. This endpoint calculates and updates reorder levels, minimum stock levels, and maximum stock levels based on historical consumption data.
+
+**Method:** GET
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.stock_analyzer.update_reorder_points`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Query Parameters (optional):**
+
+    Content-Type: application/json
+    
+    {
+        "item_code": "ITEM-001",
+        "warehouse": "Main Warehouse - Company"
+    }
+
+**Parameters Description:**
+
+- **item_code** (String, optional): Update reorder points for specific item. If not provided, updates all items.
+- **warehouse** (String, optional): Update reorder points for specific warehouse. If not provided, updates all warehouses.
+
+**Example Request:**
+
+```bash
+curl -X GET \
+  '{{base_url}}/api/method/smart_replenishment_module.api.stock_analyzer.update_reorder_points?item_code=ITEM-001&warehouse=Main Warehouse - Company' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "updated_count": 5,
+    "skipped_count": 2,
+    "total_processed": 7,
+    "errors": []
+  }
+}
+```
+
+**Note:** Items with no consumption data will be skipped. The calculation uses lead time and safety stock days to determine optimal reorder points.
+
+**Error Responses:**
+
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## 10. Create Purchase Order from Recommendation (Direct)
+
+**Description:** Directly create a Purchase Order from an approved recommendation. This is the core function that can be called directly or through the wrapper endpoint.
+
+**Method:** POST
+
+**Endpoint:** `{{base_url}}/api/method/smart_replenishment_module.api.purchase_order_creator.create_purchase_order_from_recommendation`
+
+**Authorization:** API key
+
+- **Key:** Authorization
+- **Value:** token {{api_token}}:{{api_secret}}
+
+**Request Body:**
+
+    Content-Type: application/json
+
+    {
+        "recommendation_name": "REP-REC-2025-00001"
+    }
+
+**Parameters Description:**
+
+- **recommendation_name** (String, required): Name of the approved recommendation document
+
+**Example Request:**
+
+```bash
+curl -X POST \
+  '{{base_url}}/api/method/smart_replenishment_module.api.purchase_order_creator.create_purchase_order_from_recommendation' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: token {{api_token}}:{{api_secret}}' \
+  -d '{
+    "recommendation_name": "REP-REC-2025-00001"
+  }'
+```
+
+**Expected Response:**
+
+- **Status:** 200 OK
+- **Response Body:**
+
+```json
+{
+  "message": {
+    "status": "success",
+    "purchase_order": "PUR-ORD-2025-00001",
+    "supplier": "Supplier-001",
+    "company": "Company",
+    "total_amount": 2500.0
+  }
+}
+```
+
+**Note:** This endpoint provides the same functionality as endpoint #4 but can be called directly. The recommendation status is automatically updated to "Ordered" and linked to the created Purchase Order.
+
+**Error Responses:**
+
+- **Status:** 400 Bad Request - Recommendation not approved, supplier not found, company not found, etc.
+- **Status:** 500 Server Error - Internal server error
+
+---
+
+## Error Response Format
+
+All endpoints return errors in the following format:
+
+```json
+{
+  "message": {
+    "status": "error",
+    "message": "Error description here"
+  }
+}
+```
+
+**Common Error Messages:**
+
+- `"Only approved recommendations can be converted to Purchase Orders"`
+- `"No supplier found for Item [item_code]. Please set a preferred supplier or default supplier."`
+- `"Only pending recommendations can be approved. Current status: [status]"`
+- `"Company not found for Warehouse [warehouse]"`
+- `"Purchase Order [po_name] already exists for this recommendation"`
+- `"Status cannot be changed manually. Please use workflow actions (Approve/Reject) to change status."`
+
+---
+
+## Example Use Cases
+
+### 1. Mobile App Integration
+
+A mobile app for pharmacy managers needs to display pending recommendations:
+
+```javascript
+// Fetch high-priority pending recommendations
+const response = await fetch(
+  '{{base_url}}/api/method/smart_replenishment_module.api.recommendation_api.get_recommendations?' +
+  'filters={"status":"Pending","priority":"High"}&page=1&page_size=50',
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'token {{api_token}}:{{api_secret}}'
+    }
+  }
+);
+const data = await response.json();
+const recommendations = data.message.data;
+```
+
+### 2. Automated Approval Workflow
+
+Automatically approve recommendations for low-priority items:
+
+```javascript
+// Get low-priority pending recommendations
+const recommendations = await getRecommendations({
+  status: 'Pending',
+  priority: 'Low'
+});
+
+// Approve each one
+for (const rec of recommendations) {
+  await approveRecommendation(rec.name);
+}
+```
+
+### 3. Bulk Purchase Order Creation
+
+Create Purchase Orders for all approved recommendations:
+
+```javascript
+// Get approved recommendations
+const recommendations = await getRecommendations({
+  status: 'Approved'
+});
+
+// Create PO for each
+for (const rec of recommendations) {
+  await createPurchaseOrder(rec.name);
+}
+```
+
+---
+
+## Rate Limiting
+
+API endpoints are subject to ERPNext's standard rate limiting. For high-volume operations, consider:
+
+1. Using batch operations where possible
+2. Implementing retry logic with exponential backoff
+3. Using scheduled tasks for bulk operations
+
+---
+
+## Variables
+
+- **{{base_url}}** - Replace with the appropriate API base URL for your environment (e.g., `https://yoursite.erpnext.com`)
+- **{{api_token}}** - Replace with the API token from your user
+- **{{api_secret}}** - Replace with the API secret from your user
+
+---
+
+## Support
+
+For API issues or questions, contact: zeiadmadboly@gmail.com
+

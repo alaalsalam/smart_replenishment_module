@@ -1,0 +1,159 @@
+{
+ "actions": [],
+ "creation": "2024-01-01 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Setup",
+ "engine": "InnoDB",
+ "field_order": [
+  "general_settings_section",
+  "auto_generate_enabled",
+  "consumption_period_days",
+  "enable_safety_stock_days",
+  "default_safety_stock_days",
+  "enable_supplier_lead_time_days",
+  "default_supplier_lead_time_days",
+  "column_break_1",
+  "consumption_calculation_method",
+  "supplier_selection_strategy",
+  "notification_settings_section",
+  "notification_users",
+  "notification_roles",
+  "column_break_2",
+  "notification_on_priority"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_settings_section",
+   "fieldtype": "Section Break",
+   "label": "General Settings"
+  },
+  {
+   "default": "90",
+   "description": "Number of days of historical data to analyze for consumption calculation",
+   "fieldname": "consumption_period_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Consumption Period (Days)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "Active Days Only",
+   "description": "Method for calculating average daily consumption:\n<br>\n\u2022 Active Days Only: Divide total consumption by days with actual transactions (more accurate for sporadic sales)\n<br>\n\u2022 Full Period: Divide by entire analysis period",
+   "fieldname": "consumption_calculation_method",
+   "fieldtype": "Select",
+   "label": "Consumption Calculation Method",
+   "options": "Active Days Only\nFull Period",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "When enabled, Safety Stock (Days) field in Item Reorder table will auto-populate from default value when adding new rows. If disabled, field is still visible but user enters value manually.",
+   "fieldname": "enable_safety_stock_days",
+   "fieldtype": "Check",
+   "label": "Enable Safety Stock (Days) Auto-Population"
+  },
+  {
+   "default": "7",
+   "depends_on": "eval:doc.enable_safety_stock_days==1",
+   "description": "Default safety stock buffer in days. Auto-populates Item Reorder table when checkbox is enabled. Field is always visible in Item Reorder table.",
+   "fieldname": "default_safety_stock_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Default Safety Stock (Days)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_generate_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Auto-Generate Recommendations"
+  },
+  {
+   "default": "Preferred Supplier",
+   "description": "Strategy for selecting supplier when multiple suppliers are available",
+   "fieldname": "supplier_selection_strategy",
+   "fieldtype": "Select",
+   "label": "Supplier Selection Strategy",
+   "options": "Preferred Supplier\nShortest Lead Time\nLowest Cost\nBalanced (Lead Time + Cost)"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, Supplier Lead Time (Days) field in Item Reorder table will auto-populate from default value when adding new rows. If disabled, field is still visible but user enters value manually.",
+   "fieldname": "enable_supplier_lead_time_days",
+   "fieldtype": "Check",
+   "label": "Enable Supplier Lead Time (Days)"
+  },
+  {
+   "default": "7",
+   "depends_on": "eval:doc.enable_supplier_lead_time_days==1",
+   "description": "Default supplier lead time in days. Auto-populates Item Reorder table when checkbox is enabled. Field is always visible in Item Reorder table.",
+   "fieldname": "default_supplier_lead_time_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Default Supplier Lead Time (Days)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "notification_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Notification Settings"
+  },
+  {
+   "fieldname": "notification_users",
+   "fieldtype": "Table",
+   "label": "Notification Users",
+   "options": "Replenishment Notification User"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notification_roles",
+   "fieldtype": "Table",
+   "label": "Notification Roles",
+   "options": "Replenishment Notification Role"
+  },
+  {
+   "default": "All",
+   "fieldname": "notification_on_priority",
+   "fieldtype": "Select",
+   "label": "Notify On Priority",
+   "options": "All\nHigh Only\nHigh & Medium"
+  }
+ ],
+ "idx": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-11-14 19:40:08.601537",
+ "modified_by": "Administrator",
+ "module": "Smart Replenishment",
+ "name": "Replenishment Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Stock Manager",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

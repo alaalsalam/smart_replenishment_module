@@ -1,0 +1,23 @@
+[
+	{
+		"key": "ctrl+shift+m",
+		"command": "workbench.action.tasks.runTask",
+		"args": "Bench: Migrate"
+	},
+	{
+		"key": "ctrl+shift+c",
+		"command": "workbench.action.tasks.runTask",
+		"args": "Bench: Clear Cache"
+	},
+	{
+		"key": "ctrl+shift+r",
+		"command": "workbench.action.tasks.runTask",
+		"args": "Bench: Restart"
+	},
+	{
+		"key": "ctrl+shift+t",
+		"command": "workbench.action.tasks.runTask",
+		"args": "Run Test Cycle"
+	}
+]
+

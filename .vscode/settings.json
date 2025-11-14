@@ -1,0 +1,73 @@
+{
+	// Python Configuration
+	"python.defaultInterpreterPath": "${workspaceFolder}/../../env/bin/python",
+	"python.analysis.extraPaths": [
+		"${workspaceFolder}/../frappe",
+		"${workspaceFolder}/../erpnext"
+	],
+	"python.analysis.typeCheckingMode": "basic",
+	"python.linting.enabled": true,
+	"python.linting.pylintEnabled": false,
+	"python.linting.flake8Enabled": true,
+	"python.formatting.provider": "black",
+	"python.formatting.blackArgs": [
+		"--line-length=100"
+	],
+	
+	// File Associations
+	"files.associations": {
+		"*.json": "jsonc",
+		"hooks.py": "python",
+		"install.py": "python"
+	},
+	
+	// Editor Settings
+	"editor.tabSize": 4,
+	"editor.insertSpaces": true,
+	"editor.formatOnSave": true,
+	"editor.rulers": [100],
+	"editor.wordWrap": "on",
+	"editor.trimAutoWhitespace": true,
+	"files.trimTrailingWhitespace": true,
+	"files.insertFinalNewline": true,
+	
+	// File Exclusions
+	"files.exclude": {
+		"**/__pycache__": true,
+		"**/*.pyc": true,
+		"**/.git": true,
+		"**/node_modules": true,
+		"**/.bench": true
+	},
+	
+	// Search Exclusions
+	"search.exclude": {
+		"**/__pycache__": true,
+		"**/*.pyc": true,
+		"**/node_modules": true,
+		"**/.bench": true,
+		"**/env": true,
+		"**/sites": true,
+		"**/logs": true
+	},
+	
+	// File Watcher
+	"files.watcherExclude": {
+		"**/__pycache__/**": true,
+		"**/node_modules/**": true,
+		"**/.bench/**": true,
+		"**/env/**": true,
+		"**/sites/**": true
+	},
+	
+	// Markdown Settings
+	"markdown.preview.breaks": true,
+	"markdown.preview.fontSize": 14,
+	
+	// Terminal Settings
+	"terminal.integrated.cwd": "${workspaceFolder}",
+	
+	// Git Settings
+	"git.ignoreLimitWarning": true
+}
+

@@ -1,0 +1,96 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Test Cycle",
+			"type": "shell",
+			"command": "bench",
+			"args": [
+				"--site",
+				"${input:siteName}",
+				"console"
+			],
+			"problemMatcher": [],
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true,
+				"focus": true
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/.."
+			},
+			"runOptions": {
+				"runOn": "default"
+			}
+		},
+		{
+			"label": "Bench: Migrate",
+			"type": "shell",
+			"command": "bench",
+			"args": [
+				"--site",
+				"${input:siteName}",
+				"migrate"
+			],
+			"problemMatcher": [],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/.."
+			}
+		},
+		{
+			"label": "Bench: Clear Cache",
+			"type": "shell",
+			"command": "bench",
+			"args": [
+				"--site",
+				"${input:siteName}",
+				"clear-cache"
+			],
+			"problemMatcher": [],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/.."
+			}
+		},
+		{
+			"label": "Bench: Restart",
+			"type": "shell",
+			"command": "bench",
+			"args": [
+				"restart"
+			],
+			"problemMatcher": [],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/.."
+			}
+		}
+	],
+	"inputs": [
+		{
+			"id": "siteName",
+			"type": "promptString",
+			"description": "Enter site name",
+			"default": "srm.local"
+		}
+	]
+}
+

@@ -43,7 +43,7 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {"Item": "public/js/item.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -84,6 +84,7 @@ app_license = "mit"
 
 # before_install = "smart_replenishment_module.install.before_install"
 # after_install = "smart_replenishment_module.install.after_install"
+after_migrate = "smart_replenishment_module.utils.install.execute"
 
 # Uninstallation
 # ------------
@@ -137,34 +138,53 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Item": {
+		"on_update": "smart_replenishment_module.doc_events.item.on_update"
+	},
+	"Purchase Order": {
+		"on_cancel": "smart_replenishment_module.doc_events.purchase_order.on_cancel"
+	},
+	"Stock Entry": {
+		"on_submit": "smart_replenishment_module.doc_events.stock_entry.on_submit"
+	},
+	"Delivery Note": {
+		"on_submit": "smart_replenishment_module.doc_events.delivery_note.on_submit"
+	},
+	"Sales Invoice": {
+		"on_submit": "smart_replenishment_module.doc_events.sales_invoice.on_submit"
+	}
+}
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"smart_replenishment_module.tasks.all"
-# 	],
-# 	"daily": [
-# 		"smart_replenishment_module.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"smart_replenishment_module.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"smart_replenishment_module.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"smart_replenishment_module.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"all": [
+		"smart_replenishment_module.scheduler_events.scheduled_tasks.scheduled_update_reorder_points",
+		"smart_replenishment_module.scheduler_events.scheduled_tasks.scheduled_generate_recommendations"
+	]
+}
+
+# Fixtures
+# ---------------
+
+fixtures = [
+	# Extract workflow for the Replenishment Recommendation Doctype
+	{
+		"dt": "Workflow",
+		"filters": [
+			["name", "=", "Replenishment Recommendation Workflow"]
+		]
+	},
+	# Extract workspace for the Smart Replenishment Module
+	{
+		"dt": "Workspace",
+		"filters": [
+			["name", "=", "Smart Replenishment Module"]
+		]
+	}
+]	
 
 # Testing
 # -------

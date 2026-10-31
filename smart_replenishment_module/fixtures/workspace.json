@@ -92,6 +92,9 @@
     "url": null
    }
   ],
+  "module": "Smart Replenishment",
   "title": "Smart Replenishment Module"
+  ,
+  "type": "Workspace"
  }
 ]
